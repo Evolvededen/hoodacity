@@ -1,0 +1,102 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Inter', 'Inter Fallback';
+  --font-serif: 'Playfair Display', 'Playfair Display Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  
+  --radius: 0.5rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* Luxe Black & Gold Theme - Hoodacity Inspired */
+  --color-background: oklch(0.08 0.01 60);
+  --color-foreground: oklch(0.95 0.01 60);
+  
+  --color-card: oklch(0.12 0.015 60);
+  --color-card-foreground: oklch(0.95 0.01 60);
+  
+  --color-popover: oklch(0.12 0.015 60);
+  --color-popover-foreground: oklch(0.95 0.01 60);
+  
+  /* Warm gold primary */
+  --color-primary: oklch(0.75 0.12 85);
+  --color-primary-foreground: oklch(0.10 0.02 60);
+  
+  /* Muted secondary */
+  --color-secondary: oklch(0.16 0.02 60);
+  --color-secondary-foreground: oklch(0.90 0.02 60);
+  
+  --color-muted: oklch(0.18 0.015 60);
+  --color-muted-foreground: oklch(0.65 0.02 60);
+  
+  /* Gold accent */
+  --color-accent: oklch(0.70 0.14 75);
+  --color-accent-foreground: oklch(0.10 0.02 60);
+  
+  --color-destructive: oklch(0.55 0.20 25);
+  --color-destructive-foreground: oklch(0.98 0 0);
+  
+  /* Borders with warm tint */
+  --color-border: oklch(0.25 0.02 60);
+  --color-input: oklch(0.14 0.015 60);
+  --color-ring: oklch(0.75 0.12 85);
+  
+  /* Charts - warm metallics */
+  --color-chart-1: oklch(0.75 0.12 85);
+  --color-chart-2: oklch(0.70 0.14 75);
+  --color-chart-3: oklch(0.65 0.10 50);
+  --color-chart-4: oklch(0.60 0.08 40);
+  --color-chart-5: oklch(0.55 0.06 30);
+  
+  /* Sidebar - deeper black */
+  --color-sidebar: oklch(0.06 0.015 60);
+  --color-sidebar-foreground: oklch(0.95 0.01 60);
+  --color-sidebar-primary: oklch(0.75 0.12 85);
+  --color-sidebar-primary-foreground: oklch(0.10 0.02 60);
+  --color-sidebar-accent: oklch(0.14 0.02 60);
+  --color-sidebar-accent-foreground: oklch(0.95 0.01 60);
+  --color-sidebar-border: oklch(0.22 0.02 60);
+  --color-sidebar-ring: oklch(0.75 0.12 85);
+  --color-sidebar-muted: oklch(0.55 0.02 60);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    outline-color: color-mix(in oklch, var(--color-ring) 50%, transparent);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: 'Inter', 'Geist', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', 'Georgia', serif;
+  }
+}
+
+/* Gold gradient text utility */
+.text-gold-gradient {
+  background: linear-gradient(135deg, oklch(0.80 0.10 85), oklch(0.70 0.14 75), oklch(0.75 0.12 85));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gold border glow */
+.border-gold-glow {
+  border-color: oklch(0.75 0.12 85);
+  box-shadow: 0 0 20px oklch(0.75 0.12 85 / 0.2);
+}
+
+/* Marble texture overlay */
+.marble-texture {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+}
