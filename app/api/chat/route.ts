@@ -10,6 +10,17 @@ function getMessageText(msg: UIMessage): string {
     .join('')
 }
 
+// Fallback responses when AI Gateway is unavailable
+function getDemoResponse(systemPrompt: string, messageCount: number): string {
+  const responses = [
+    "Hello! I'm here to help you today. What can I assist you with?",
+    "Thank you for your message. I'm currently in demo mode while AI services are being configured. Please check back soon for full functionality!",
+    "I appreciate your patience. Our AI capabilities will be fully enabled shortly. In the meantime, feel free to explore the platform.",
+    "Thank you for trying out this intelligence. Full AI responses will be available once the AI Gateway is configured.",
+  ]
+  return responses[Math.min(messageCount - 1, responses.length - 1)]
+}
+
 export async function POST(req: Request) {
   const {
     messages,
@@ -107,22 +118,54 @@ export async function POST(req: Request) {
 
   const systemMessage = finalSystemPrompt + context
 
-  const result = streamText({
-    model,
-    system: systemMessage,
-    messages: await convertToModelMessages(messages),
-    temperature,
-  })
+  try {
+    const result = streamText({
+      model,
+      system: systemMessage,
+      messages: await convertToModelMessages(messages),
+      temperature,
+    })
 
-  // Track analytics for deployments
-  if (deploymentId) {
-    await supabase.from('analytics_events').insert({
-      intelligence_id: intelligenceId,
-      deployment_id: deploymentId,
-      event_type: 'message',
-      metadata: { model },
+    // Track analytics for deployments
+    if (deploymentId) {
+      await supabase.from('analytics_events').insert({
+        intelligence_id: intelligenceId,
+        deployment_id: deploymentId,
+        event_type: 'message',
+        metadata: { model },
+      })
+    }
+
+    return result.toUIMessageStreamResponse()
+  } catch (error) {
+    // Fallback when AI Gateway is unavailable (credit card required)
+    console.log('[v0] AI Gateway unavailable, using demo response')
+    
+    const demoResponse = getDemoResponse(finalSystemPrompt, messages.length)
+    
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        const messageData = {
+          type: 'text',
+          value: demoResponse,
+        }
+        controller.enqueue(encoder.encode(`0:${JSON.stringify(messageData)}\n`))
+        
+        const finishData = {
+          type: 'finish',
+          finishReason: 'stop',
+        }
+        controller.enqueue(encoder.encode(`d:${JSON.stringify(finishData)}\n`))
+        controller.close()
+      },
+    })
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'X-Vercel-AI-Data-Stream': 'v1',
+      },
     })
   }
-
-  return result.toUIMessageStreamResponse()
 }
