@@ -7,7 +7,13 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Brain, Loader2, Chrome, Github } from 'lucide-react'
+import { Loader2, Shield, Crown } from 'lucide-react'
+
+// Admin emails that get automatic admin privileges
+const ADMIN_EMAILS = [
+  'desire1319@yahoo.com',
+  'hoodacity.ai@gmail.com',
+]
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -16,9 +22,12 @@ export default function SignUpPage() {
   const [fullName, setFullName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [ssoLoading, setSsoLoading] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  const isAdminEmail = ADMIN_EMAILS.some(
+    adminEmail => adminEmail.toLowerCase() === email.toLowerCase()
+  )
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,136 +47,107 @@ export default function SignUpPage() {
       return
     }
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-          `${window.location.origin}/dashboard`,
-        data: {
-          full_name: fullName,
+    try {
+      // Sign up with Supabase - email confirmation is disabled in project settings
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            is_admin: isAdminEmail,
+            role: isAdminEmail ? 'owner' : 'member',
+          },
         },
-      },
-    })
+      })
 
-    if (error) {
-      setError(error.message)
+      if (signUpError) {
+        setError(signUpError.message)
+        setLoading(false)
+        return
+      }
+
+      // If user was created and session exists (email confirmation disabled)
+      if (data.session) {
+        // Direct login - redirect to dashboard or onboarding
+        router.push('/dashboard')
+      } else if (data.user) {
+        // Email confirmation required - show success page
+        router.push('/auth/sign-up-success')
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.')
       setLoading(false)
-      return
-    }
-
-    router.push('/auth/sign-up-success')
-  }
-
-  const handleSSOLogin = async (provider: 'google' | 'github') => {
-    setSsoLoading(provider)
-    setError(null)
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-
-    if (error) {
-      setError(error.message)
-      setSsoLoading(null)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      {/* Gradient overlay */}
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center bg-black p-4">
+      {/* Gold gradient overlay */}
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/20 via-black to-black pointer-events-none" />
       
       <div className="relative w-full max-w-md space-y-8">
+        {/* Logo */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent">
-            <Brain className="h-8 w-8 text-primary-foreground" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-500/20">
+            <span className="text-2xl font-serif font-bold text-black">H</span>
           </div>
           <div className="text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">RIS</h1>
-            <p className="text-muted-foreground text-sm mt-1">Registered Intelligence Systems</p>
+            <h1 className="text-3xl font-serif font-bold tracking-tight text-white">Hoodacity</h1>
+            <p className="text-amber-200/60 text-sm mt-1">Registered Intelligence Systems</p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-8">
+        <div className="rounded-2xl border border-amber-500/20 bg-zinc-900/80 backdrop-blur-sm p-8">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-foreground">Create your account</h2>
-            <p className="text-muted-foreground text-sm mt-1">
+            <h2 className="text-xl font-semibold text-white">Create your account</h2>
+            <p className="text-zinc-400 text-sm mt-1">
               Start your 14-day free trial today
             </p>
           </div>
 
-          {/* SSO Options */}
-          <div className="space-y-3 mb-6">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 bg-card/50 border-border hover:bg-secondary/50"
-              onClick={() => handleSSOLogin('google')}
-              disabled={ssoLoading !== null}
-            >
-              {ssoLoading === 'google' ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Chrome className="mr-2 h-4 w-4" />
-              )}
-              Continue with Google
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 bg-card/50 border-border hover:bg-secondary/50"
-              onClick={() => handleSSOLogin('github')}
-              disabled={ssoLoading !== null}
-            >
-              {ssoLoading === 'github' ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Github className="mr-2 h-4 w-4" />
-              )}
-              Continue with GitHub
-            </Button>
-          </div>
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
+          {/* Admin indicator */}
+          {isAdminEmail && (
+            <div className="mb-6 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 flex items-center gap-2">
+              <Crown className="h-4 w-4 text-amber-400" />
+              <span className="text-sm text-amber-200">
+                Admin privileges will be granted
+              </span>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
-            </div>
-          </div>
+          )}
           
           <form onSubmit={handleSignUp} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
+              <Label htmlFor="fullName" className="text-zinc-300">Full Name</Label>
               <Input
                 id="fullName"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Your full name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                className="h-12 bg-input border-border text-foreground placeholder:text-muted-foreground"
+                className="h-12 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-amber-500/50 focus:ring-amber-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="h-12 bg-input border-border text-foreground placeholder:text-muted-foreground"
-              />
+              <Label htmlFor="email" className="text-zinc-300">Email</Label>
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-12 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-amber-500/50 focus:ring-amber-500/20"
+                />
+                {isAdminEmail && (
+                  <Shield className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400" />
+                )}
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">Password</Label>
+              <Label htmlFor="password" className="text-zinc-300">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -176,11 +156,11 @@ export default function SignUpPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="h-12 bg-input border-border text-foreground placeholder:text-muted-foreground"
+                className="h-12 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-amber-500/50 focus:ring-amber-500/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-foreground">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-zinc-300">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -189,23 +169,23 @@ export default function SignUpPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
-                className="h-12 bg-input border-border text-foreground placeholder:text-muted-foreground"
+                className="h-12 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-amber-500/50 focus:ring-amber-500/20"
               />
               {password && confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-destructive">Passwords do not match</p>
+                <p className="text-xs text-red-400">Passwords do not match</p>
               )}
             </div>
 
             {error && (
-              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-destructive text-sm text-center">
+              <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-red-400 text-sm text-center">
                 {error}
               </div>
             )}
 
             <Button 
               type="submit" 
-              className="w-full h-12 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity" 
-              disabled={loading || ssoLoading !== null}
+              className="w-full h-12 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold transition-all" 
+              disabled={loading}
             >
               {loading ? (
                 <>
@@ -217,18 +197,22 @@ export default function SignUpPage() {
               )}
             </Button>
 
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="text-xs text-center text-zinc-500">
               14-day free trial. No credit card required.
             </p>
           </form>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
+          <div className="mt-6 text-center text-sm text-zinc-400">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-primary hover:text-primary/80 transition-colors font-medium">
+            <Link href="/auth/login" className="text-amber-400 hover:text-amber-300 transition-colors font-medium">
               Sign in
             </Link>
           </div>
         </div>
+
+        <p className="text-center text-xs text-zinc-600">
+          By signing up, you agree to our Terms of Service and Privacy Policy
+        </p>
       </div>
     </div>
   )
