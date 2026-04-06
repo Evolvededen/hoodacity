@@ -4,13 +4,18 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
 
 export default function Login() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,24 +30,22 @@ export default function Login() {
       if (error) {
         toast.error(error.message);
       } else if (data.user) {
-        toast.success('Logged in successfully!');
-        router.push('/');
+        toast.success('Logged in! Redirecting...');
+        router.push('/dashboards');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to log in');
+      toast.error(error.message || 'Failed to login');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGitHubLogin = async () => {
+  const handleGitHub = async () => {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) toast.error(error.message);
     } catch (error: any) {
@@ -52,14 +55,12 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogle = async () => {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) toast.error(error.message);
     } catch (error: any) {
@@ -81,7 +82,7 @@ export default function Login() {
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
               Email Address
@@ -91,7 +92,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
@@ -105,7 +106,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
@@ -124,30 +125,30 @@ export default function Login() {
             <div className="w-full border-t border-zinc-300 dark:border-zinc-600"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400">Or continue with</span>
+            <span className="px-2 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400">Or sign in with</span>
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3 mb-6">
           <button
             type="button"
-            onClick={handleGitHubLogin}
+            onClick={handleGitHub}
             disabled={isLoading}
-            className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
           >
-            <span>🐙</span> GitHub
+            GitHub
           </button>
           <button
             type="button"
-            onClick={handleGoogleLogin}
+            onClick={handleGoogle}
             disabled={isLoading}
-            className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
           >
-            <span>🔴</span> Google
+            Google
           </button>
         </div>
 
-        <p className="text-center text-zinc-600 dark:text-zinc-400 mt-6">
+        <p className="text-center text-zinc-600 dark:text-zinc-400">
           Don&apos;t have an account?{' '}
           <Link href="/auth/signup" className="text-blue-500 hover:text-blue-600 font-medium">
             Create one
