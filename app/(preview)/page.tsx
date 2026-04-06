@@ -13,6 +13,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { Header } from "@/components/header";
 import { Streamdown } from "streamdown";
 
 const getTextFromDataUrl = (dataUrl: string) => {
@@ -42,7 +44,8 @@ function TextFilePreview({ file }: { file: File }) {
 
 export default function Home() {
   const router = useRouter();
-  const { messages, input, handleSubmit, handleInputChange, isLoading } =
+  const { user, isLoading } = useAuth();
+  const { messages, input, handleSubmit, handleInputChange, isLoading: isChatLoading } =
     useChat({
       onError: () =>
         toast.error("You've been rate limited, please try again later!"),
@@ -152,51 +155,56 @@ export default function Home() {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* Header with Navigation */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          <span className="text-2xl">🏢</span>
-          HoodaCity
-        </Link>
-        <div className="flex gap-2">
-          <Link
-            href="/dashboards"
-            className="px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
-          >
-            📊 Dashboards
-          </Link>
-          <Link
-            href="/generators"
-            className="px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
-          >
-            ✨ Generators
-          </Link>
-          <Link
-            href="/agents"
-            className="px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
-          >
-            🤖 Agents
-          </Link>
+      <Header />
+
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center h-full">
+          <p>Loading...</p>
         </div>
-      </div>
-
-      <AnimatePresence>
-        {isDragging && (
-          <motion.div
-            className="fixed pointer-events-none dark:bg-zinc-900/90 h-dvh w-dvw z-10 flex flex-row justify-center items-center flex flex-col gap-1 bg-zinc-100/90"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div>Drag and drop files here</div>
-            <div className="text-sm dark:text-zinc-400 text-zinc-500">
-              {"(images and text)"}
+      ) : !user ? (
+        <div className="flex flex-col items-center justify-center h-full gap-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">
+              Welcome to HoodaCity
+            </h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+              Please sign in or create an account to get started
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Link
+                href="/auth/login"
+                className="px-6 py-3 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="px-6 py-3 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors"
+              >
+                Create Account
+              </Link>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      ) : (
+        <>
+          <AnimatePresence>
+            {isDragging && (
+              <motion.div
+                className="fixed pointer-events-none dark:bg-zinc-900/90 h-dvh w-dvw z-10 flex flex-row justify-center items-center flex flex-col gap-1 bg-zinc-100/90"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div>Drag and drop files here</div>
+                <div className="text-sm dark:text-zinc-400 text-zinc-500">
+                  {"(images and text)"}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      <div className="flex flex-col justify-between gap-4 flex-1">
+          <div className="flex flex-col justify-between gap-4 flex-1">
         {messages.length > 0 ? (
           <div className="flex flex-col gap-2 h-full w-dvw items-center overflow-y-scroll">
             {messages.map((message, index) => (
@@ -363,7 +371,8 @@ export default function Home() {
             />
           </div>
         </form>
-      </div>
+        </>
+      )}
     </div>
   );
 }

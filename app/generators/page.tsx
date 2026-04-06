@@ -1,6 +1,7 @@
 "use client";
 
-import { DashboardNav } from "@/components/dashboard-components";
+import { ProtectedRoute } from "@/components/protected-route";
+import { Header } from "@/components/header";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -30,10 +31,11 @@ export default function GeneratorsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <DashboardNav />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Content Generators
@@ -101,7 +103,8 @@ export default function GeneratorsPage() {
             </div>
           </div>
         </motion.div>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }

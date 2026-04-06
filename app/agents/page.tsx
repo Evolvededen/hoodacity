@@ -1,6 +1,7 @@
 "use client";
 
-import { DashboardNav } from "@/components/dashboard-components";
+import { ProtectedRoute } from "@/components/protected-route";
+import { Header } from "@/components/header";
 import { mockAgents } from "@/lib/mock-data";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -31,10 +32,11 @@ export default function AgentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <DashboardNav />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             AI Agents
@@ -124,28 +126,8 @@ export default function AgentsPage() {
                       Model: {(agent.config.aiModel as string) || "gpt-4"}
                     </span>
                     <span className="text-blue-500 text-sm">View Details →</span>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6"
-        >
-          <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-2">Create New Agent</h3>
-          <p className="text-blue-800 dark:text-blue-200 text-sm mb-4">
-            Need a custom agent for your workflow? Create a new agent with specific capabilities and configurations.
-          </p>
-          <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-            + New Agent
-          </button>
-        </motion.div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }

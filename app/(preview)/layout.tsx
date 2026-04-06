@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Metadata } from "next";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://hoodacity-multibots.vercel.app"),
@@ -21,8 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Toaster position="top-center" richColors />
-        {children}
+        <AuthProvider>
+          <Toaster position="top-center" richColors />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
