@@ -45,7 +45,7 @@ function TextFilePreview({ file }: { file: File }) {
 export default function Home() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const { messages, input, handleSubmit, handleInputChange, isLoading: isChatLoading } =
+  const { messages, input, handleSubmit, handleInputChange, isLoading: chatIsLoading } =
     useChat({
       onError: () =>
         toast.error("You've been rate limited, please try again later!"),
@@ -53,30 +53,27 @@ export default function Home() {
 
   const [files, setFiles] = useState<FileList | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null); // Reference for the hidden file input
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const handlePaste = (event: React.ClipboardEvent) => {
     const items = event.clipboardData?.items;
-
     if (items) {
-      const files = Array.from(items)
-        .map((item) => item.getAsFile())
-        .filter((file): file is File => file !== null);
-
-      if (files.length > 0) {
-        const validFiles = files.filter(
-          (file) =>
-            file.type.startsWith("image/") || file.type.startsWith("text/")
-        );
-
-        if (validFiles.length === files.length) {
-          const dataTransfer = new DataTransfer();
-          validFiles.forEach((file) => dataTransfer.items.add(file));
-          setFiles(dataTransfer.files);
-        } else {
-          toast.error("Only image and text files are allowed");
+      const files = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === "file") {
+          const file = items[i].getAsFile();
+          if (file && (file.type.startsWith("image/") || file.type.startsWith("text/"))) {
+            files.push(file);
+          }
         }
+      }
+      if (files.length > 0) {
+        const dataTransfer = new DataTransfer();
+        files.forEach((file) => dataTransfer.items.add(file));
+        setFiles(dataTransfer.files);
+      } else {
+        toast.error("Only image and text files are allowed");
       }
     }
   };
@@ -124,12 +121,10 @@ export default function Home() {
     scrollToBottom();
   }, [messages]);
 
-  // Function to handle file selection via the upload button
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  // Function to handle files selected from the file dialog
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files;
     if (selectedFiles) {
@@ -148,6 +143,43 @@ export default function Home() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-white dark:bg-zinc-900">
+        <p className="text-zinc-600 dark:text-zinc-400">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-white dark:bg-zinc-900">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-4">
+            Welcome to HoodaCity
+          </h2>
+          <p className="text-zinc-600 dark:text-zinc-400 mb-8">
+            Please sign in or create an account to get started
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link
+              href="/auth/login"
+              className="px-6 py-3 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="px-6 py-3 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors"
+            >
+              Create Account
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex flex-col justify-center pb-20 h-dvh bg-white dark:bg-zinc-900"
@@ -157,54 +189,23 @@ export default function Home() {
     >
       <Header />
 
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center h-full">
-          <p>Loading...</p>
-        </div>
-      ) : !user ? (
-        <div className="flex flex-col items-center justify-center h-full gap-4">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">
-              Welcome to HoodaCity
-            </h2>
-            <p className="text-zinc-600 dark:text-zinc-400 mb-6">
-              Please sign in or create an account to get started
-            </p>
-            <div className="flex gap-2 justify-center">
-              <Link
-                href="/auth/login"
-                className="px-6 py-3 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="px-6 py-3 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-lg transition-colors"
-              >
-                Create Account
-              </Link>
+      <AnimatePresence>
+        {isDragging && (
+          <motion.div
+            className="fixed pointer-events-none dark:bg-zinc-900/90 h-dvh w-dvw z-10 flex flex-row justify-center items-center flex flex-col gap-1 bg-zinc-100/90"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div>Drag and drop files here</div>
+            <div className="text-sm dark:text-zinc-400 text-zinc-500">
+              {"(images and text)"}
             </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <AnimatePresence>
-            {isDragging && (
-              <motion.div
-                className="fixed pointer-events-none dark:bg-zinc-900/90 h-dvh w-dvw z-10 flex flex-row justify-center items-center flex flex-col gap-1 bg-zinc-100/90"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <div>Drag and drop files here</div>
-                <div className="text-sm dark:text-zinc-400 text-zinc-500">
-                  {"(images and text)"}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          <div className="flex flex-col justify-between gap-4 flex-1">
+      <div className="flex flex-col justify-between gap-4 flex-1">
         {messages.length > 0 ? (
           <div className="flex flex-col gap-2 h-full w-dvw items-center overflow-y-scroll">
             {messages.map((message, index) => (
@@ -244,8 +245,8 @@ export default function Home() {
               </motion.div>
             ))}
 
-            {isLoading &&
-              messages[messages.length - 1].role !== "assistant" && (
+            {chatIsLoading &&
+              messages[messages.length - 1]?.role !== "assistant" && (
                 <div className="flex flex-row gap-2 px-4 w-full md:w-[500px] md:px-0">
                   <div className="size-[24px] flex flex-col justify-center items-center flex-shrink-0 text-zinc-400">
                     <BotIcon />
@@ -273,106 +274,108 @@ export default function Home() {
                 files, and other media content to the AI provider.
               </p>
               <p>
-                {" "}
                 Learn more about the{" "}
                 <Link
                   className="text-blue-500 dark:text-blue-400"
                   href="https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot#attachments-experimental"
                   target="_blank"
                 >
-                  useChat{" "}
+                  useChat
                 </Link>
-                hook from Vercel AI SDK.
+                {" "}hook from Vercel AI SDK.
               </p>
             </div>
           </motion.div>
         )}
+      </div>
 
-        <form
-          className="flex flex-col gap-2 relative items-center"
-          onSubmit={(event) => {
-            const options = files ? { experimental_attachments: files } : {};
-            handleSubmit(event, options);
-            setFiles(null);
-          }}
-        >
-          <AnimatePresence>
-            {files && files.length > 0 && (
-              <div className="flex flex-row gap-2 absolute bottom-12 px-4 w-full md:w-[500px] md:px-0">
-                {Array.from(files).map((file) =>
-                  file.type.startsWith("image") ? (
-                    <div key={file.name}>
-                      <motion.img
-                        src={URL.createObjectURL(file)}
-                        alt={file.name}
-                        className="rounded-md w-16"
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{
-                          y: -10,
-                          scale: 1.1,
-                          opacity: 0,
-                          transition: { duration: 0.2 },
-                        }}
-                      />
-                    </div>
-                  ) : file.type.startsWith("text") ? (
-                    <motion.div
-                      key={file.name}
-                      className="text-[8px] leading-1 w-28 h-16 overflow-hidden text-zinc-500 border p-2 rounded-lg bg-white dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{
-                        y: -10,
-                        scale: 1.1,
-                        opacity: 0,
-                        transition: { duration: 0.2 },
-                      }}
-                    >
-                      <TextFilePreview file={file} />
-                    </motion.div>
-                  ) : null
-                )}
-              </div>
-            )}
-          </AnimatePresence>
+      <form
+        className="flex flex-col gap-2 relative items-center"
+        onSubmit={(event) => {
+          const options = files ? { experimental_attachments: files } : {};
+          handleSubmit(event, options);
+          setFiles(null);
+        }}
+      >
+        <AnimatePresence>
+          {files && (
+            <div className="flex flex-row gap-2 max-w-[500px] w-full px-4 md:px-0 flex-wrap">
+              {Array.from(files).map((file) =>
+                file.type.startsWith("image") ? (
+                  <motion.img
+                    key={file.name}
+                    className="rounded-md w-28 h-16 object-cover"
+                    src={URL.createObjectURL(file)}
+                    alt={file.name}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{
+                      y: -10,
+                      scale: 1.1,
+                      opacity: 0,
+                      transition: { duration: 0.2 },
+                    }}
+                  />
+                ) : (
+                  <motion.div
+                    key={file.name}
+                    className="text-[8px] leading-1 w-28 h-16 overflow-hidden text-zinc-500 border p-2 rounded-lg bg-white dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{
+                      y: -10,
+                      scale: 1.1,
+                      opacity: 0,
+                      transition: { duration: 0.2 },
+                    }}
+                  >
+                    <TextFilePreview file={file} />
+                  </motion.div>
+                )
+              )}
+            </div>
+          )}
+        </AnimatePresence>
 
-          {/* Hidden file input */}
+        <input
+          type="file"
+          multiple
+          accept="image/*,text/*"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleFileChange}
+        />
+
+        <div className="flex items-center w-full md:max-w-[500px] max-w-[calc(100dvw-32px)] bg-zinc-100 dark:bg-zinc-700 rounded-full px-4 py-2">
+          <button
+            type="button"
+            onClick={handleUploadClick}
+            className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-700 dark:hover:text-zinc-100 focus:outline-none mr-3"
+            aria-label="Upload Files"
+          >
+            <span className="w-5 h-5">
+              <AttachmentIcon aria-hidden="true" />
+            </span>
+          </button>
+
           <input
-            type="file"
-            multiple
-            accept="image/*,text/*"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileChange}
+            ref={inputRef}
+            className="bg-transparent flex-grow outline-none text-zinc-800 dark:text-zinc-300 placeholder-zinc-400"
+            placeholder="Send a message..."
+            value={input}
+            onChange={handleInputChange}
+            onPaste={handlePaste}
           />
 
-          <div className="flex items-center w-full md:max-w-[500px] max-w-[calc(100dvw-32px)] bg-zinc-100 dark:bg-zinc-700 rounded-full px-4 py-2">
-            {/* Upload Button */}
-            <button
-              type="button"
-              onClick={handleUploadClick}
-              className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-700 dark:hover:text-zinc-100 focus:outline-none mr-3"
-              aria-label="Upload Files"
-            >
-              <span className="w-5 h-5">
-                <AttachmentIcon aria-hidden="true" />
-              </span>
-            </button>
-
-            {/* Message Input */}
-            <input
-              ref={inputRef}
-              className="bg-transparent flex-grow outline-none text-zinc-800 dark:text-zinc-300 placeholder-zinc-400"
-              placeholder="Send a message..."
-              value={input}
-              onChange={handleInputChange}
-              onPaste={handlePaste}
-            />
-          </div>
-        </form>
-        </>
-      )}
+          <button
+            type="submit"
+            className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-700 dark:hover:text-zinc-100 focus:outline-none ml-3"
+            aria-label="Send"
+          >
+            <span className="w-5 h-5">→</span>
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
