@@ -3,9 +3,14 @@ import { Metadata } from "next";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ai-sdk-preview-attachments.vercel.dev"),
-  title: "Attachments Preview",
-  description: "Experimental preview of attachments in useChat hook",
+  metadataBase: new URL("https://hoodacity-multibots.vercel.app"),
+  title: "HoodaCity Multibots - AI-Powered Dashboards & Generators",
+  description: "Manage HR, Intake, Onboarding, and Front Desk with AI agents and content generators",
+  openGraph: {
+    title: "HoodaCity Multibots",
+    description: "AI-powered business management system",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
