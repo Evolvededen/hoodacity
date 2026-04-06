@@ -35,6 +35,40 @@ export default function Login() {
     }
   };
 
+  const handleGitHubLogin = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) toast.error(error.message);
+    } catch (error: any) {
+      toast.error(error.message || 'GitHub login failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) toast.error(error.message);
+    } catch (error: any) {
+      toast.error(error.message || 'Google login failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-900 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -84,6 +118,34 @@ export default function Login() {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-zinc-300 dark:border-zinc-600"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400">Or continue with</span>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={handleGitHubLogin}
+            disabled={isLoading}
+            className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <span>🐙</span> GitHub
+          </button>
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+            className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <span>🔴</span> Google
+          </button>
+        </div>
 
         <p className="text-center text-zinc-600 dark:text-zinc-400 mt-6">
           Don&apos;t have an account?{' '}
