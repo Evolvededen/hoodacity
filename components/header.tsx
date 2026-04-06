@@ -2,16 +2,19 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { AuthContext } from '@/lib/auth-context';
 
 export function Header() {
-  const { user, logout } = useAuth();
+  const context = useContext(AuthContext);
+  const user = context?.user;
+  const logout = context?.logout;
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    if (!logout) return;
     setIsLoggingOut(true);
     try {
       await logout();
