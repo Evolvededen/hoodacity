@@ -2,14 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { toast } from 'sonner';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-);
+import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 export default function Login() {
   const router = useRouter();
@@ -29,42 +24,12 @@ export default function Login() {
 
       if (error) {
         toast.error(error.message);
-      } else if (data.user) {
-        toast.success('Logged in! Redirecting...');
+      } else {
+        toast.success('Signed in! Redirecting...');
         router.push('/dashboards');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to login');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGitHub = async () => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
-      });
-      if (error) toast.error(error.message);
-    } catch (error: any) {
-      toast.error(error.message || 'GitHub login failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogle = async () => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
-      });
-      if (error) toast.error(error.message);
-    } catch (error: any) {
-      toast.error(error.message || 'Google login failed');
+      toast.error(error.message || 'Failed to sign in');
     } finally {
       setIsLoading(false);
     }
@@ -74,18 +39,14 @@ export default function Login() {
     <div className="min-h-screen bg-white dark:bg-zinc-900 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-2">
-            HoodaCity
-          </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Sign in to your account
-          </p>
+          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-2">HoodaCity</h1>
+          <p className="text-zinc-600 dark:text-zinc-400">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4 mb-6">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-              Email Address
+              Email
             </label>
             <input
               type="email"
@@ -120,40 +81,14 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-300 dark:border-zinc-600"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400">Or sign in with</span>
-          </div>
+        <div className="mt-6 text-center">
+          <p className="text-zinc-600 dark:text-zinc-400">
+            Don&apos;t have an account?{' '}
+            <Link href="/auth/signup" className="text-blue-500 hover:text-blue-600 font-medium">
+              Sign up
+            </Link>
+          </p>
         </div>
-
-        <div className="space-y-3 mb-6">
-          <button
-            type="button"
-            onClick={handleGitHub}
-            disabled={isLoading}
-            className="w-full bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-          >
-            GitHub
-          </button>
-          <button
-            type="button"
-            onClick={handleGoogle}
-            disabled={isLoading}
-            className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-          >
-            Google
-          </button>
-        </div>
-
-        <p className="text-center text-zinc-600 dark:text-zinc-400">
-          Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="text-blue-500 hover:text-blue-600 font-medium">
-            Create one
-          </Link>
-        </p>
       </div>
     </div>
   );
