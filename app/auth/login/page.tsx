@@ -26,7 +26,7 @@ export default function Login() {
         toast.error(error.message);
       } else {
         toast.success('Signed in! Redirecting...');
-        router.push('/dashboards');
+        router.push('/dashboard');
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');
@@ -36,38 +36,36 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-purple-950 to-black flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-2">HoodaCity</h1>
-          <p className="text-zinc-600 dark:text-zinc-400">Sign in to your account</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 to-purple-400 bg-clip-text text-transparent mb-2">
+            HoodaCity
+          </h1>
+          <p className="text-purple-300">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4 bg-gradient-to-br from-purple-900/30 to-black border border-yellow-500/20 rounded-lg p-8">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-purple-300 mb-2">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-purple-900 bg-black text-white placeholder-gray-500 focus:border-yellow-500/50 outline-none transition-colors rounded"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-purple-300 mb-2">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-2 border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-purple-900 bg-black text-white placeholder-gray-500 focus:border-yellow-500/50 outline-none transition-colors rounded"
               required
             />
           </div>
@@ -75,16 +73,16 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-zinc-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            className="w-full bg-gradient-to-r from-yellow-500 to-purple-600 hover:from-yellow-600 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-2 rounded transition-all transform hover:scale-105"
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-purple-300">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/signup" className="text-blue-500 hover:text-blue-600 font-medium">
+            <Link href="/auth/signup" className="text-yellow-400 hover:text-yellow-300 font-medium">
               Sign up
             </Link>
           </p>

@@ -28,77 +28,65 @@ export function Header() {
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
-      <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-        <span className="text-2xl">🏢</span>
-        HoodaCity
+    <div className="flex items-center justify-between px-6 py-4 border-b border-purple-900/50 bg-gradient-to-r from-black via-purple-950 to-black">
+      <Link href="/" className="flex items-center gap-2 font-bold text-xl">
+        <span className="text-3xl">🏢</span>
+        <span className="bg-gradient-to-r from-yellow-400 to-purple-400 bg-clip-text text-transparent">HoodaCity</span>
       </Link>
 
       {user ? (
-        <div className="flex gap-4 items-center">
-          <div className="flex gap-2">
+        <div className="flex gap-6 items-center">
+          <div className="flex gap-4">
+            <Link
+              href="/dashboard"
+              className="px-4 py-2 text-sm font-medium text-purple-300 hover:text-yellow-400 transition border border-purple-900/50 hover:border-yellow-500/50 rounded-lg"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/admin"
+              className="px-4 py-2 text-sm font-medium text-purple-300 hover:text-yellow-400 transition border border-purple-900/50 hover:border-yellow-500/50 rounded-lg"
+            >
+              Admin
+            </Link>
+            <Link
+              href="/profile"
+              className="px-4 py-2 text-sm font-medium text-purple-300 hover:text-yellow-400 transition border border-purple-900/50 hover:border-yellow-500/50 rounded-lg"
+            >
+              Profile
+            </Link>
             <Link
               href="/dashboards"
-              className="px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
+              className="px-4 py-2 text-sm font-medium text-purple-300 hover:text-yellow-400 transition border border-purple-900/50 hover:border-yellow-500/50 rounded-lg"
             >
-              Dashboards
-            </Link>
-            <Link
-              href="/generators"
-              className="px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
-            >
-              Generators
-            </Link>
-            <Link
-              href="/agents"
-              className="px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition"
-            >
-              Agents
+              Departments
             </Link>
           </div>
 
-          <div className="flex items-center gap-3 pl-3 border-l border-zinc-200 dark:border-zinc-700">
-            <div className="text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center gap-4 pl-4 border-l border-purple-900/50">
+            <div className="text-sm text-purple-300">
               {user.email}
             </div>
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="px-3 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 disabled:bg-zinc-400 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-gray-600 disabled:to-gray-700 rounded-lg transition-all"
             >
               {isLoggingOut ? 'Logging out...' : 'Logout'}
             </button>
           </div>
         </div>
       ) : (
-        <div className="flex gap-2 items-center">
-          <Link
-            href="/dashboards"
-            className="px-3 py-2 text-xs font-medium text-yellow-500 hover:text-yellow-400 transition border border-yellow-500/30 rounded bg-yellow-500/5"
-          >
-            TEST: Dashboards
-          </Link>
-          <Link
-            href="/generators"
-            className="px-3 py-2 text-xs font-medium text-yellow-500 hover:text-yellow-400 transition border border-yellow-500/30 rounded bg-yellow-500/5"
-          >
-            TEST: Generators
-          </Link>
-          <Link
-            href="/agents"
-            className="px-3 py-2 text-xs font-medium text-yellow-500 hover:text-yellow-400 transition border border-yellow-500/30 rounded bg-yellow-500/5"
-          >
-            TEST: Agents
-          </Link>
+        <div className="flex gap-4 items-center">
           <Link
             href="/auth/login"
-            className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition border border-zinc-200 dark:border-zinc-700 rounded-lg"
+            className="px-4 py-2 text-sm font-medium text-purple-300 hover:text-yellow-400 transition border border-purple-900/50 hover:border-yellow-500/50 rounded-lg"
           >
             Sign In
           </Link>
           <Link
             href="/auth/signup"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-yellow-500 to-purple-600 hover:from-yellow-600 hover:to-purple-700 rounded-lg transition-all"
           >
             Sign Up
           </Link>
