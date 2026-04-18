@@ -27,27 +27,34 @@ export default function SignUp() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    console.log('[v0] Signup attempt started')
 
     if (password !== confirmPassword) {
+      console.log('[v0] Password mismatch')
       setError('Passwords do not match')
       return
     }
 
     if (!role) {
+      console.log('[v0] No role selected')
       setError('Please select a role')
       return
     }
 
     setLoading(true)
+    console.log('[v0] Loading started, creating Supabase client')
 
     try {
       const supabase = createClient()
+      console.log('[v0] Supabase client created')
 
       const redirectUrl =
         process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
         `${window.location.origin}/auth/callback`
+      
+      console.log('[v0] Redirect URL:', redirectUrl)
 
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -60,11 +67,19 @@ export default function SignUp() {
         },
       })
 
-      if (signUpError) throw signUpError
+      console.log('[v0] Signup response:', { data, signUpError })
 
+      if (signUpError) {
+        console.error('[v0] Signup error:', signUpError)
+        throw signUpError
+      }
+
+      console.log('[v0] Signup successful, redirecting to success page')
       router.push('/auth/sign-up-success')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      console.error('[v0] Signup catch error:', errorMessage, err)
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
