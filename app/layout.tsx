@@ -15,6 +15,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Hoodacity - AI Command Center',
   description: 'Manage and monitor your AI agents',
+  icons: {
+    icon: '/favicon.jpg',
+  },
 }
 
 export const viewport = {
