@@ -1,18 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-
-const ROLES = [
-  { id: 'messenger', label: 'Messenger', tier: 'basic' },
-  { id: 'messenger_pro', label: 'Messenger Pro', tier: 'pro' },
-  { id: 'entrepreneur', label: 'Entrepreneur', tier: 'standard' },
-  { id: 'creators_hub', label: 'Creators Hub', tier: 'standard' },
-  { id: 'client', label: 'Client', tier: 'standard' },
-  { id: 'student', label: 'Student', tier: 'free' },
-]
 
 export default function SignUp() {
   const [email, setEmail] = useState('')
@@ -22,64 +12,59 @@ export default function SignUp() {
   const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    console.log('[v0] Signup attempt started')
+
+    if (!fullName) {
+      setError('Please enter your name')
+      return
+    }
 
     if (password !== confirmPassword) {
-      console.log('[v0] Password mismatch')
       setError('Passwords do not match')
       return
     }
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
     if (!role) {
-      console.log('[v0] No role selected')
-      setError('Please select a role')
+      setError('Please select an account type')
       return
     }
 
     setLoading(true)
-    console.log('[v0] Loading started, creating Supabase client')
 
     try {
-      const supabase = createClient()
-      console.log('[v0] Supabase client created')
-
-      const redirectUrl =
-        process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ??
-        `${window.location.origin}/auth/callback`
-      
-      console.log('[v0] Redirect URL:', redirectUrl)
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: fullName,
-            role,
-            display_name: fullName,
-          },
-        },
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          fullName,
+          role,
+        }),
       })
 
-      console.log('[v0] Signup response:', { data, signUpError })
+      const data = await response.json()
 
-      if (signUpError) {
-        console.error('[v0] Signup error:', signUpError)
-        throw signUpError
+      if (!response.ok) {
+        throw new Error(data.error || 'Signup failed')
       }
 
-      console.log('[v0] Signup successful, redirecting to success page')
-      router.push('/auth/sign-up-success')
+      setSuccess(true)
+      setTimeout(() => {
+        router.push('/auth/sign-up-success')
+      }, 1000)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
-      console.error('[v0] Signup catch error:', errorMessage, err)
-      setError(errorMessage)
+      setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -92,6 +77,12 @@ export default function SignUp() {
           <h1 className="text-3xl font-bold">Hoodacity</h1>
           <p className="text-muted-foreground">Create your account</p>
         </div>
+
+        {success && (
+          <div className="p-4 bg-green-100/10 border border-green-500/30 text-green-600 rounded-lg text-sm">
+            Account created! Redirecting...
+          </div>
+        )}
 
         {error && (
           <div className="p-4 bg-destructive/10 border border-destructive text-destructive rounded-lg text-sm">
@@ -107,7 +98,8 @@ export default function SignUp() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+              disabled={loading}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
               placeholder="John Doe"
             />
           </div>
@@ -119,7 +111,8 @@ export default function SignUp() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+              disabled={loading}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
               placeholder="you@example.com"
             />
           </div>
@@ -127,12 +120,18 @@ export default function SignUp() {
           <div>
             <label className="block text-sm font-medium mb-2">Account Type</label>
             <div className="grid grid-cols-2 gap-2">
-              {ROLES.map((r) => (
+              {[
+                { id: 'messenger', label: 'Messenger' },
+                { id: 'entrepreneur', label: 'Entrepreneur' },
+                { id: 'creators_hub', label: 'Creators' },
+                { id: 'client', label: 'Client' },
+              ].map((r) => (
                 <button
                   key={r.id}
                   type="button"
+                  disabled={loading}
                   onClick={() => setRole(r.id)}
-                  className={`p-3 rounded-lg border text-sm font-medium transition ${
+                  className={`p-3 rounded-lg border text-sm font-medium transition disabled:opacity-50 ${
                     role === r.id
                       ? 'border-primary bg-primary/10 text-primary'
                       : 'border-border hover:border-muted-foreground'
@@ -151,21 +150,21 @@ export default function SignUp() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+              disabled={loading}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
               placeholder="••••••••"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Confirm Password
-            </label>
+            <label className="block text-sm font-medium mb-1">Confirm Password</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-primary"
+              disabled={loading}
+              className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
               placeholder="••••••••"
             />
           </div>
