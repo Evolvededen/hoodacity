@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     // Create Supabase client with service role key for server-side signup
     const supabaseUrl = 'https://xrmrilaeoxaonaourohu.supabase.co'
-    const supabaseServiceKey = process.env.SUPABASE_JWT_SECRET || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhybXJpbGFlb3hhb25hb3Vyb2h1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcwOTgxNjA4MiwiZXhwIjoxOTk2NTkyMDgyfQ.3X1R3K3v-vZYLJ5X9pYqL3K6X9pYqL3K6X9pYqL3K6E'
+    const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhybXJpbGFlb3hhb25hb3Vyb2h1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTA1NTg0MiwiZXhwIjoyMDg0NjMxODQyfQ.5-jyfFKkdujBWnORq1IKqj-chxkfJEtK6l7KAb1cun0'
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
