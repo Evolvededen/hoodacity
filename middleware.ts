@@ -1,44 +1,19 @@
-import { createServerClient, serialize } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Get the auth token from cookies
+  const token = request.cookies.get('sb-auth-token')?.value;
 
   // Protect dashboard routes
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    if (!user) {
+    if (!token) {
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
   }
 
   // Protect exchange routes
   if (request.nextUrl.pathname.startsWith('/exchange')) {
-    if (!user) {
+    if (!token) {
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
   }
@@ -47,12 +22,12 @@ export async function middleware(request: NextRequest) {
   if (
     (request.nextUrl.pathname.startsWith('/auth/login') ||
       request.nextUrl.pathname.startsWith('/auth/signup')) &&
-    user
+    token
   ) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
