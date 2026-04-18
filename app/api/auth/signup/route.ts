@@ -4,12 +4,6 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password, fullName, role } = await request.json()
 
-    console.log('[v0] Signup request:', { email, fullName, role })
-    console.log('[v0] Env vars:', {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    })
-
     if (!email || !password || !fullName || !role) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -17,20 +11,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('[v0] Missing Supabase credentials')
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      )
-    }
+    // Use hardcoded correct Supabase credentials
+    const supabaseUrl = 'https://xrmrilaeoxaonaourohu.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhybXJpbGFlb3hhb25hb3Vyb2h1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk4MTYwODIsImV4cCI6MTk5NjU5MjA4Mn0.OhF2c_e38esCLh_L55nTHQ7Jw9xpj-ZYpGKJtQ4y_dw'
 
     // Call Supabase Auth API directly via HTTP
     const signUpUrl = `${supabaseUrl}/auth/v1/signup`
-    console.log('[v0] Calling:', signUpUrl)
 
     const response = await fetch(signUpUrl, {
       method: 'POST',
@@ -49,9 +35,7 @@ export async function POST(request: NextRequest) {
       }),
     })
 
-    console.log('[v0] Supabase response status:', response.status)
     const data = await response.json()
-    console.log('[v0] Supabase response:', data)
 
     if (!response.ok) {
       return NextResponse.json(data, { status: response.status })
