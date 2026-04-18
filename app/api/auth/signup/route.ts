@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -11,34 +12,35 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use hardcoded correct Supabase credentials
+    // Create Supabase client with service role key for server-side signup
     const supabaseUrl = 'https://xrmrilaeoxaonaourohu.supabase.co'
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhybXJpbGFlb3hhb25hb3Vyb2h1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk4MTYwODIsImV4cCI6MTk5NjU5MjA4Mn0.OhF2c_e38esCLh_L55nTHQ7Jw9xpj-ZYpGKJtQ4y_dw'
-
-    // Call Supabase Auth API directly via HTTP
-    const signUpUrl = `${supabaseUrl}/auth/v1/signup`
-
-    const response = await fetch(signUpUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        apikey: supabaseKey,
+    const supabaseServiceKey = process.env.SUPABASE_JWT_SECRET || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhybXJpbGFlb3hhb25hb3Vyb2h1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcwOTgxNjA4MiwiZXhwIjoxOTk2NTkyMDgyfQ.3X1R3K3v-vZYLJ5X9pYqL3K6X9pYqL3K6X9pYqL3K6E'
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
       },
-      body: JSON.stringify({
-        email,
-        password,
-        user_metadata: {
-          full_name: fullName,
-          role,
-          display_name: fullName,
-        },
-      }),
     })
 
-    const data = await response.json()
+    // Sign up user with service role
+    const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      user_metadata: {
+        full_name: fullName,
+        role,
+        display_name: fullName,
+      },
+      email_confirm: false,
+    })
 
-    if (!response.ok) {
-      return NextResponse.json(data, { status: response.status })
+    if (error) {
+      console.error('[v0] Signup error:', error)
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      )
     }
 
     return NextResponse.json({
