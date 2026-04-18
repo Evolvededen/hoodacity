@@ -32,14 +32,16 @@ export default function Home() {
             Elevate Your AI Standard with Full Business Automation, Custom Agents & Generators, and a Complete AI Platform. Redefine intelligence—boldly, powerfully, unapologetically.
           </p>
           <div className="flex gap-4 justify-center pt-4">
-            <Link href="/dashboard">
+            <Link href="/auth/sign-up">
               <button className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition">
                 Design Your Intelligence
               </button>
             </Link>
-            <button className="px-8 py-3 border border-border rounded-lg font-medium hover:bg-muted transition">
-              Try Demo
-            </button>
+            <Link href="/auth/login">
+              <button className="px-8 py-3 border border-border rounded-lg font-medium hover:bg-muted transition">
+                Sign In
+              </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -89,7 +91,7 @@ export default function Home() {
           <p className="text-lg text-muted-foreground">
             Step into a new paradigm where intelligence meets boldness. Hoodacity is more than AI—it&apos;s a movement.
           </p>
-          <Link href="/dashboard">
+          <Link href="/auth/sign-up">
             <button className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition">
               Get Started
             </button>
